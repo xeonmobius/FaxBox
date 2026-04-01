@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/pagination"
 import { FaxPreview } from "@/pages/FaxPreview"
 import { SendNewFax } from "@/pages/SendNewFax"
+import { Contacts } from "@/pages/Contacts"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -66,7 +67,7 @@ type FaxItem = {
 }
 
 export default function App() {
-  const [activeView, setActiveView] = useState<"inbox" | "outbox" | "newfax">("inbox")
+  const [activeView, setActiveView] = useState<"inbox" | "outbox" | "newfax" | "contacts">("inbox")
   const [currentPage, setCurrentPage] = useState(1)
   const [outboxPage, setOutboxPage] = useState(1)
   const [previewFax, setPreviewFax] = useState<FaxItem | null>(null)
@@ -110,11 +111,16 @@ export default function App() {
           } else if (view === "newfax") {
             setPreviewFax(null)
             setActiveView("newfax")
+          } else if (view === "contacts") {
+            setPreviewFax(null)
+            setActiveView("contacts")
           }
         }} />
         <main className="flex-1 p-6">
           {activeView === "newfax" ? (
             <SendNewFax />
+          ) : activeView === "contacts" ? (
+            <Contacts />
           ) : (
             <>
               <h1 className="text-2xl font-bold mt-4">
