@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,6 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { FaxPreview } from "@/pages/FaxPreview"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -41,18 +42,32 @@ const ITEMS_PER_PAGE = 10
 export default function App() {
   const [activeView, _setActiveView] = useState<"inbox" | "outbox">("inbox")
   const [currentPage, setCurrentPage] = useState(1)
+  const [previewFax, setPreviewFax] = useState<typeof faxes[0] | null>(null)
   const faxCount = faxes.filter((f) => f.status === "New").length
 
   const totalPages = Math.ceil(faxes.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const paginatedFaxes = faxes.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
+  if (previewFax) {
+    return (
+      <TooltipProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <FaxPreview
+            fax={previewFax}
+            onBack={() => setPreviewFax(null)}
+          />
+        </SidebarProvider>
+      </TooltipProvider>
+    )
+  }
+
   return (
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar />
         <main className="flex-1 p-6">
-          <SidebarTrigger />
           <h1 className="text-2xl font-bold mt-4">
             {activeView === "inbox" ? "Inbox" : "Outbox"}
           </h1>
@@ -87,7 +102,13 @@ export default function App() {
                             <TableCell>{fax.received}</TableCell>
                             <TableCell>{fax.pages}</TableCell>
                             <TableCell>
-                              <Button variant="outline" size="sm">Preview</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPreviewFax(fax)}
+                              >
+                                Preview
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
