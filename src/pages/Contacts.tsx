@@ -45,7 +45,11 @@ const contacts: Contact[] = [
 
 const ITEMS_PER_PAGE = 10
 
-export function Contacts() {
+interface ContactsProps {
+  onAddContact: () => void
+}
+
+export function Contacts({ onAddContact }: ContactsProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.ceil(contacts.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -55,7 +59,7 @@ export function Contacts() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold mt-4">Contacts</h1>
-        <Button className="bg-black text-white hover:bg-black/90" onClick={() => alert("New Contact form coming soon")}>
+        <Button className="bg-black text-white hover:bg-black/90" onClick={onAddContact}>
           <Plus className="mr-2 h-4 w-4" />
           New Contact
         </Button>
