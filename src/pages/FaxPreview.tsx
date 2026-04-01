@@ -6,10 +6,12 @@ import { FaxMetadata } from "@/components/FaxMetadata"
 interface FaxPreviewProps {
   fax: {
     id: number
-    sender: string
-    received: string
-    pages: number
     status: string
+    pages: number
+    sender?: string
+    recipient?: string
+    received?: string
+    sent?: string
   }
   onBack: () => void
 }

@@ -18,7 +18,11 @@ const menuItems = [
   { title: "Contacts", icon: Users },
 ]
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onNavigate: (view: string) => void
+}
+
+export function AppSidebar({ onNavigate }: AppSidebarProps) {
   return (
     <Sidebar>
       <SidebarContent>
@@ -34,7 +38,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton>
+                  <SidebarMenuButton onClick={() => onNavigate(item.title.toLowerCase())}>
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
