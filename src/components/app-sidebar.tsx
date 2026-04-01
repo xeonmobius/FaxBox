@@ -30,7 +30,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           <SidebarGroupLabel>FaxBox</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="px-3 py-2">
-              <Button className="w-full bg-black text-white hover:bg-black/90">
+              <Button className="w-full bg-black text-white hover:bg-black/90" onClick={() => onNavigate("newfax")}>
                 <Plus className="mr-2 h-4 w-4" />
                 Send New Fax
               </Button>

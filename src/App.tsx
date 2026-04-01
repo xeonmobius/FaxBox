@@ -21,6 +21,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { FaxPreview } from "@/pages/FaxPreview"
+import { SendNewFax } from "@/pages/SendNewFax"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -65,7 +66,7 @@ type FaxItem = {
 }
 
 export default function App() {
-  const [activeView, setActiveView] = useState<"inbox" | "outbox">("inbox")
+  const [activeView, setActiveView] = useState<"inbox" | "outbox" | "newfax">("inbox")
   const [currentPage, setCurrentPage] = useState(1)
   const [outboxPage, setOutboxPage] = useState(1)
   const [previewFax, setPreviewFax] = useState<FaxItem | null>(null)
@@ -106,13 +107,20 @@ export default function App() {
           } else if (view === "outbox") {
             setPreviewFax(null)
             setActiveView("outbox")
+          } else if (view === "newfax") {
+            setPreviewFax(null)
+            setActiveView("newfax")
           }
         }} />
         <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mt-4">
-            {activeView === "inbox" ? "Inbox" : "Outbox"}
-          </h1>
-          <div className="mt-4 space-y-6">
+          {activeView === "newfax" ? (
+            <SendNewFax />
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold mt-4">
+                {activeView === "inbox" ? "Inbox" : "Outbox"}
+              </h1>
+              <div className="mt-4 space-y-6">
             {activeView === "inbox" ? (
               <>
                 <Card className="w-fit">
@@ -200,12 +208,12 @@ export default function App() {
               </>
             ) : (
               <>
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                   <Card className="w-fit">
                     <CardContent className="pt-6">
                       <div className="text-4xl font-bold">{sentCount}</div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        total sent
+                        Total Sent
                       </p>
                     </CardContent>
                   </Card>
@@ -213,7 +221,7 @@ export default function App() {
                     <CardContent className="pt-6">
                       <div className="text-4xl font-bold">{failedCount}</div>
                       <p className="text-sm text-muted-foreground mt-1">
-                        failed
+                        Failed
                       </p>
                     </CardContent>
                   </Card>
@@ -302,6 +310,8 @@ export default function App() {
               </>
             )}
           </div>
+            </>
+          )}
         </main>
       </SidebarProvider>
     </TooltipProvider>
