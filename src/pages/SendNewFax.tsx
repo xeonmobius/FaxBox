@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from "react"
+import { useState, useRef, useEffect, ChangeEvent } from "react"
 import { ArrowLeft, Search, X, FileText, Scan, Eye, Save, Send, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,11 +13,31 @@ interface Contact {
   address: string
 }
 
-interface Attachment {
+export interface Attachment {
   id: string
   name: string
   size: string
   type: string
+}
+
+export interface OutboxFaxFormData {
+  id?: number
+  status?: string
+  sent?: string
+  pages?: number
+  recipient: string
+  subject: string
+  coverLetter: string
+  attachments: Attachment[]
+  resolution: string
+  priority: string
+}
+
+interface SendNewFaxProps {
+  onBack: () => void
+  editingFax: OutboxFaxFormData | null
+  onSave: (data: OutboxFaxFormData) => void
+  onDelete: (id: number) => void
 }
 
 const mockContacts: Contact[] = [
@@ -28,14 +48,35 @@ const mockContacts: Contact[] = [
   { id: 5, name: "City Clinic", faxNumber: "+1 (555) 678-9012", address: "654 Wellness St" },
 ]
 
-export function SendNewFax() {
+export function SendNewFax({ onBack, editingFax, onSave, onDelete }: SendNewFaxProps) {
   const [recipientSearch, setRecipientSearch] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
+  const [subject, setSubject] = useState("")
   const [coverLetter, setCoverLetter] = useState("")
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const scanInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingFax) {
+      setRecipientSearch(editingFax.recipient)
+      setSubject(editingFax.subject)
+      setCoverLetter(editingFax.coverLetter)
+      setAttachments(editingFax.attachments)
+      const matchedContact = mockContacts.find((c) => c.faxNumber === editingFax.recipient)
+      if (matchedContact) {
+        setSelectedContact(matchedContact)
+        setRecipientSearch(`${matchedContact.name} - ${matchedContact.faxNumber}`)
+      }
+    } else {
+      setRecipientSearch("")
+      setSubject("")
+      setCoverLetter("")
+      setAttachments([])
+      setSelectedContact(null)
+    }
+  }, [editingFax])
 
   const filteredContacts = recipientSearch.length > 0
     ? mockContacts.filter(
@@ -115,7 +156,7 @@ export function SendNewFax() {
   }
 
   function handleSendFax() {
-    if (!selectedContact && !recipientSearch) {
+    if (!recipientSearch) {
       alert("Please select a recipient")
       return
     }
@@ -123,18 +164,34 @@ export function SendNewFax() {
       alert("Please add at least one attachment")
       return
     }
-    alert("Sending fax...")
+    const recipientFax = selectedContact?.faxNumber || recipientSearch.split(" - ").pop() || recipientSearch
+    onSave({
+      id: editingFax?.id,
+      recipient: recipientFax,
+      subject,
+      coverLetter,
+      attachments,
+      resolution: "standard",
+      priority: "normal",
+    })
   }
+
+  function handleDelete() {
+    if (editingFax?.id) {
+      onDelete(editingFax.id)
+    }
+  }
+
+  const isEditing = !!editingFax
 
   return (
     <div className="flex-1 flex flex-col h-screen">
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Send New Fax</h1>
+          <h1 className="text-xl font-semibold">{isEditing ? "Edit Fax" : "Send New Fax"}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePreview}>
@@ -145,6 +202,11 @@ export function SendNewFax() {
             <Save className="mr-2 h-4 w-4" />
             Save as Draft
           </Button>
+          {isEditing && (
+            <Button className="bg-red-600 text-white hover:bg-red-700" onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
           <Button className="bg-black text-white hover:bg-black/90" onClick={handleSendFax}>
             <Send className="mr-2 h-4 w-4" />
             Send Fax
@@ -152,10 +214,8 @@ export function SendNewFax() {
         </div>
       </header>
 
-      {/* Form */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-3xl mx-auto space-y-6">
-          {/* Recipient Search */}
           <div className="space-y-2">
             <Label htmlFor="recipient">Recipient</Label>
             <div className="relative">
@@ -209,9 +269,18 @@ export function SendNewFax() {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="subject">Subject</Label>
+            <Input
+              id="subject"
+              placeholder="Enter fax subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+            />
+          </div>
+
           <Separator />
 
-          {/* Attachments */}
           <div className="space-y-3">
             <Label>Attachments</Label>
             <div className="flex gap-2">
@@ -276,7 +345,6 @@ export function SendNewFax() {
             )}
           </div>
 
-          {/* Cover Letter */}
           <div className="space-y-2">
             <Label htmlFor="coverLetter">Cover Letter</Label>
             <Textarea

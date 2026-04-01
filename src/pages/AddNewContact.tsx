@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,11 +6,25 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-interface AddNewContactProps {
-  onBack: () => void
+export interface ContactFormData {
+  id?: number
+  fullName: string
+  title: string
+  specialty: string
+  officeAddress: string
+  phoneNumber: string
+  faxNumber: string
+  internalNotes: string
 }
 
-export function AddNewContact({ onBack }: AddNewContactProps) {
+interface AddNewContactProps {
+  onBack: () => void
+  editingContact: ContactFormData | null
+  onSave: (contact: ContactFormData) => void
+  onDelete: (id: number) => void
+}
+
+export function AddNewContact({ onBack, editingContact, onSave, onDelete }: AddNewContactProps) {
   const [fullName, setFullName] = useState("")
   const [title, setTitle] = useState("")
   const [specialty, setSpecialty] = useState("")
@@ -19,44 +33,75 @@ export function AddNewContact({ onBack }: AddNewContactProps) {
   const [faxNumber, setFaxNumber] = useState("")
   const [internalNotes, setInternalNotes] = useState("")
 
+  useEffect(() => {
+    if (editingContact) {
+      setFullName(editingContact.fullName)
+      setTitle(editingContact.title)
+      setSpecialty(editingContact.specialty)
+      setOfficeAddress(editingContact.officeAddress)
+      setPhoneNumber(editingContact.phoneNumber)
+      setFaxNumber(editingContact.faxNumber)
+      setInternalNotes(editingContact.internalNotes)
+    } else {
+      setFullName("")
+      setTitle("")
+      setSpecialty("")
+      setOfficeAddress("")
+      setPhoneNumber("")
+      setFaxNumber("")
+      setInternalNotes("")
+    }
+  }, [editingContact])
+
   function handleSave() {
     if (!fullName) {
       alert("Please enter a full name")
       return
     }
-    alert("Contact saved successfully")
-    onBack()
+    onSave({
+      id: editingContact?.id,
+      fullName,
+      title,
+      specialty,
+      officeAddress,
+      phoneNumber,
+      faxNumber,
+      internalNotes,
+    })
   }
 
   function handleDelete() {
-    alert("Contact deleted")
-    onBack()
+    if (editingContact?.id) {
+      onDelete(editingContact.id)
+    }
   }
+
+  const isEditing = !!editingContact
 
   return (
     <div className="flex-1 flex flex-col h-screen">
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Add New Contact</h1>
+          <h1 className="text-xl font-semibold">{isEditing ? "Edit Contact" : "Add New Contact"}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onBack}>
             Cancel
           </Button>
-          <Button className="bg-red-600 text-white hover:bg-red-700" onClick={handleDelete}>
-            Delete
-          </Button>
+          {isEditing && (
+            <Button className="bg-red-600 text-white hover:bg-red-700" onClick={handleDelete}>
+              Delete
+            </Button>
+          )}
           <Button className="bg-black text-white hover:bg-black/90" onClick={handleSave}>
-            Save Contact
+            {isEditing ? "Save Contact" : "Save Contact"}
           </Button>
         </div>
       </header>
 
-      {/* Form */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="space-y-2">
