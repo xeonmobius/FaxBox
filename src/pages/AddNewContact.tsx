@@ -22,9 +22,10 @@ interface AddNewContactProps {
   editingContact: ContactFormData | null
   onSave: (contact: ContactFormData) => void
   onDelete: (id: number) => void
+  prefillFax?: string
 }
 
-export function AddNewContact({ onBack, editingContact, onSave, onDelete }: AddNewContactProps) {
+export function AddNewContact({ onBack, editingContact, onSave, onDelete, prefillFax }: AddNewContactProps) {
   const [fullName, setFullName] = useState("")
   const [title, setTitle] = useState("")
   const [specialty, setSpecialty] = useState("")
@@ -42,6 +43,8 @@ export function AddNewContact({ onBack, editingContact, onSave, onDelete }: AddN
       setPhoneNumber(editingContact.phoneNumber)
       setFaxNumber(editingContact.faxNumber)
       setInternalNotes(editingContact.internalNotes)
+    } else if (prefillFax) {
+      setFaxNumber(prefillFax)
     } else {
       setFullName("")
       setTitle("")
@@ -51,7 +54,7 @@ export function AddNewContact({ onBack, editingContact, onSave, onDelete }: AddN
       setFaxNumber("")
       setInternalNotes("")
     }
-  }, [editingContact])
+  }, [editingContact, prefillFax])
 
   function handleSave() {
     if (!fullName) {

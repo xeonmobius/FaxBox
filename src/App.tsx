@@ -21,7 +21,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { FaxPreview } from "@/pages/FaxPreview"
-import { SendNewFax, type OutboxFaxFormData } from "@/pages/SendNewFax"
+import { SendNewFax, type OutboxFaxFormData, type Contact as FaxContact } from "@/pages/SendNewFax"
 import { Contacts, type Contact } from "@/pages/Contacts"
 import { AddNewContact, type ContactFormData } from "@/pages/AddNewContact"
 
@@ -91,6 +91,9 @@ export default function App() {
   const [editingContact, setEditingContact] = useState<Contact | null>(null)
   const [outboxFaxes, setOutboxFaxes] = useState<OutboxFaxFormData[]>(initialOutboxFaxes)
   const [editingOutboxFax, setEditingOutboxFax] = useState<OutboxFaxFormData | null>(null)
+  const [newContact, setNewContact] = useState<FaxContact | null>(null)
+  const [prefillFax, setPrefillFax] = useState<string | undefined>()
+  const [returnToView, setReturnToView] = useState<"contacts" | "newfax">("contacts")
   const faxCount = faxes.filter((f) => f.status === "New").length
 
   const inboxTotalPages = Math.ceil(faxes.length / ITEMS_PER_PAGE)
@@ -187,6 +190,38 @@ export default function App() {
     setActiveView("outbox")
   }
 
+  function handleAddContactFromFax(pFax?: string) {
+    setEditingContact(null)
+    setPrefillFax(pFax)
+    setReturnToView("newfax")
+    setActiveView("addContact")
+  }
+
+  function handleSaveContactFromFax(data: ContactFormData) {
+    const newId = Math.max(...contacts.map((c) => c.id), 0) + 1
+    const newC: FaxContact = {
+      id: newId,
+      name: data.fullName,
+      faxNumber: data.faxNumber,
+      address: data.officeAddress,
+    }
+    setContacts((prev) => [
+      ...prev,
+      {
+        id: newId,
+        fullName: data.fullName,
+        title: data.title,
+        specialty: data.specialty,
+        officeAddress: data.officeAddress,
+        phoneNumber: data.phoneNumber,
+        faxNumber: data.faxNumber,
+        internalNotes: data.internalNotes,
+      },
+    ])
+    setNewContact(newC)
+    setActiveView(returnToView)
+  }
+
   if (previewFax) {
     return (
       <TooltipProvider>
@@ -230,13 +265,17 @@ export default function App() {
               editingFax={editingOutboxFax}
               onSave={handleSaveOutboxFax}
               onDelete={handleDeleteOutboxFax}
+              contacts={contacts.map((c) => ({ id: c.id, name: c.fullName, faxNumber: c.faxNumber, address: c.officeAddress }))}
+              onAddContact={handleAddContactFromFax}
+              newContact={newContact}
             />
           ) : activeView === "addContact" ? (
             <AddNewContact
-              onBack={() => setActiveView("contacts")}
+              onBack={() => setActiveView(returnToView)}
               editingContact={editingContact}
-              onSave={handleSaveContact}
+              onSave={returnToView === "newfax" ? handleSaveContactFromFax : handleSaveContact}
               onDelete={handleDeleteContact}
+              prefillFax={returnToView === "newfax" ? prefillFax : undefined}
             />
           ) : activeView === "contacts" ? (
             <Contacts

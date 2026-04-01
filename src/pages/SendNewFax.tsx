@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect, ChangeEvent } from "react"
-import { ArrowLeft, Search, X, FileText, Scan, Eye, Save, Send, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Search, X, FileText, Scan, Eye, Save, Send, Plus, Trash2, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-interface Contact {
+export interface Contact {
   id: number
   name: string
   faxNumber: string
@@ -38,17 +38,39 @@ interface SendNewFaxProps {
   editingFax: OutboxFaxFormData | null
   onSave: (data: OutboxFaxFormData) => void
   onDelete: (id: number) => void
+  contacts: Contact[]
+  onAddContact: (prefillFax?: string) => void
+  newContact: Contact | null
 }
 
-const mockContacts: Contact[] = [
-  { id: 1, name: "Dr. Sarah Chen", faxNumber: "+1 (555) 234-5678", address: "123 Medical Center Dr" },
-  { id: 2, name: "John Smith Law Office", faxNumber: "+1 (555) 345-6789", address: "456 Justice Ave" },
-  { id: 3, name: "Metro Hospital", faxNumber: "+1 (555) 456-7890", address: "789 Health Blvd" },
-  { id: 4, name: "ABC Corporation", faxNumber: "+1 (555) 567-8901", address: "321 Business Park" },
-  { id: 5, name: "City Clinic", faxNumber: "+1 (555) 678-9012", address: "654 Wellness St" },
-]
+export interface Attachment {
+  id: string
+  name: string
+  size: string
+  type: string
+}
 
-export function SendNewFax({ onBack, editingFax, onSave, onDelete }: SendNewFaxProps) {
+export interface OutboxFaxFormData {
+  id?: number
+  status?: string
+  sent?: string
+  pages?: number
+  recipient: string
+  subject: string
+  coverLetter: string
+  attachments: Attachment[]
+  resolution: string
+  priority: string
+}
+
+interface SendNewFaxProps {
+  onBack: () => void
+  editingFax: OutboxFaxFormData | null
+  onSave: (data: OutboxFaxFormData) => void
+  onDelete: (id: number) => void
+}
+
+export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onAddContact, newContact }: SendNewFaxProps) {
   const [recipientSearch, setRecipientSearch] = useState("")
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
@@ -59,12 +81,19 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete }: SendNewFaxP
   const scanInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    if (newContact) {
+      setSelectedContact(newContact)
+      setRecipientSearch(`${newContact.name} - ${newContact.faxNumber}`)
+    }
+  }, [newContact])
+
+  useEffect(() => {
     if (editingFax) {
       setRecipientSearch(editingFax.recipient)
       setSubject(editingFax.subject)
       setCoverLetter(editingFax.coverLetter)
       setAttachments(editingFax.attachments)
-      const matchedContact = mockContacts.find((c) => c.faxNumber === editingFax.recipient)
+      const matchedContact = contacts.find((c) => c.faxNumber === editingFax.recipient)
       if (matchedContact) {
         setSelectedContact(matchedContact)
         setRecipientSearch(`${matchedContact.name} - ${matchedContact.faxNumber}`)
@@ -76,10 +105,10 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete }: SendNewFaxP
       setAttachments([])
       setSelectedContact(null)
     }
-  }, [editingFax])
+  }, [editingFax, contacts])
 
   const filteredContacts = recipientSearch.length > 0
-    ? mockContacts.filter(
+    ? contacts.filter(
         (c) =>
           c.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
           c.faxNumber.includes(recipientSearch) ||
@@ -217,7 +246,21 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete }: SendNewFaxP
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="recipient">Recipient</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="recipient">Recipient</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => {
+                  const faxNumber = selectedContact?.faxNumber || recipientSearch.split(" - ").pop() || recipientSearch
+                  onAddContact(faxNumber || undefined)
+                }}
+              >
+                <UserPlus className="mr-1 h-3 w-3" />
+                New Contact
+              </Button>
+            </div>
             <div className="relative">
               {selectedContact ? (
                 <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/30">
