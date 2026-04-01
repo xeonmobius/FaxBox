@@ -1,4 +1,4 @@
-import { Users, Send, Inbox, FileText, Plus } from "lucide-react"
+import { Users, Send, Inbox, FileText, Plus, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Sidebar,
@@ -16,6 +16,7 @@ const menuItems = [
   { title: "Inbox", icon: Inbox },
   { title: "Drafts", icon: FileText },
   { title: "Contacts", icon: Users },
+  { title: "Settings", icon: Settings },
 ]
 
 interface AppSidebarProps {

@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "dev": "node scripts/setup-naps2.mjs && vite",
+    "build": "node scripts/setup-naps2.mjs && tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "setup-naps2": "node scripts/setup-naps2.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
@@ -29,6 +30,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "7zip-bin": "^5.2.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   }

@@ -24,6 +24,7 @@ import { FaxPreview } from "@/pages/FaxPreview"
 import { SendNewFax, type OutboxFaxFormData, type Contact as FaxContact } from "@/pages/SendNewFax"
 import { Contacts, type Contact } from "@/pages/Contacts"
 import { AddNewContact, type ContactFormData } from "@/pages/AddNewContact"
+import { Settings } from "@/pages/Settings"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -83,7 +84,7 @@ type FaxItem = {
 }
 
 export default function App() {
-  const [activeView, setActiveView] = useState<"inbox" | "outbox" | "newfax" | "contacts" | "addContact">("inbox")
+  const [activeView, setActiveView] = useState<"inbox" | "outbox" | "newfax" | "contacts" | "addContact" | "settings">("inbox")
   const [currentPage, setCurrentPage] = useState(1)
   const [outboxPage, setOutboxPage] = useState(1)
   const [previewFax, setPreviewFax] = useState<FaxItem | null>(null)
@@ -253,6 +254,9 @@ export default function App() {
           } else if (view === "contacts") {
             setPreviewFax(null)
             setActiveView("contacts")
+          } else if (view === "settings") {
+            setPreviewFax(null)
+            setActiveView("settings")
           }
         }} />
         <main className="flex-1 p-6">
@@ -283,6 +287,8 @@ export default function App() {
               onAddContact={handleAddContact}
               onEditContact={handleEditContact}
             />
+          ) : activeView === "settings" ? (
+            <Settings />
           ) : (
             <>
               <h1 className="text-2xl font-bold mt-4">
