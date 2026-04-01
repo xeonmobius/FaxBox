@@ -12,6 +12,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -19,11 +27,25 @@ const faxes = [
   { id: 3, status: "Viewed", sender: "+1 (555) 456-7890", received: "2024-01-14 02:45 PM", pages: 5 },
   { id: 4, status: "New", sender: "+1 (555) 321-0987", received: "2024-01-14 04:00 PM", pages: 2 },
   { id: 5, status: "Viewed", sender: "+1 (555) 654-3210", received: "2024-01-13 11:20 AM", pages: 4 },
+  { id: 6, status: "New", sender: "+1 (555) 111-2222", received: "2024-01-13 08:00 AM", pages: 2 },
+  { id: 7, status: "Viewed", sender: "+1 (555) 333-4444", received: "2024-01-12 03:30 PM", pages: 6 },
+  { id: 8, status: "New", sender: "+1 (555) 555-6666", received: "2024-01-12 01:15 PM", pages: 1 },
+  { id: 9, status: "Viewed", sender: "+1 (555) 777-8888", received: "2024-01-11 10:45 AM", pages: 3 },
+  { id: 10, status: "New", sender: "+1 (555) 999-0000", received: "2024-01-11 09:00 AM", pages: 7 },
+  { id: 11, status: "Viewed", sender: "+1 (555) 222-3333", received: "2024-01-10 04:20 PM", pages: 2 },
+  { id: 12, status: "New", sender: "+1 (555) 444-5555", received: "2024-01-10 11:30 AM", pages: 4 },
 ]
+
+const ITEMS_PER_PAGE = 10
 
 export default function App() {
   const [activeView, _setActiveView] = useState<"inbox" | "outbox">("inbox")
+  const [currentPage, setCurrentPage] = useState(1)
   const faxCount = faxes.filter((f) => f.status === "New").length
+
+  const totalPages = Math.ceil(faxes.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedFaxes = faxes.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <TooltipProvider>
@@ -58,7 +80,7 @@ export default function App() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {faxes.map((fax) => (
+                        {paginatedFaxes.map((fax) => (
                           <TableRow key={fax.id}>
                             <TableCell>{fax.status}</TableCell>
                             <TableCell>{fax.sender}</TableCell>
@@ -73,6 +95,46 @@ export default function App() {
                     </Table>
                   </CardContent>
                 </Card>
+                <div className="flex justify-end">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage > 1) setCurrentPage(currentPage - 1)
+                          }}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            isActive={page === currentPage}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              setCurrentPage(page)
+                            }}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                          }}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
               </>
             ) : (
               <p className="text-muted-foreground">No faxes sent yet.</p>
