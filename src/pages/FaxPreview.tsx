@@ -35,21 +35,17 @@ export function FaxPreview({ fax: _fax, onBack }: FaxPreviewProps) {
         </Button>
       </header>
 
-      {/* Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* PDF Viewer */}
-        <div className="flex-1">
-          <PdfViewer pdfUrl={SAMPLE_PDF_URL} />
-        </div>
+      {/* Metadata Bar */}
+      <FaxMetadata
+        sender="Dr. Julian Vance"
+        organization="Mercy General Hospital"
+        faxNumber="+1 (555) 234-5678"
+        faxDate="Oct 24, 2023"
+      />
 
-        {/* Metadata Panel */}
-        <FaxMetadata
-          sender="Dr. Julian Vance"
-          organization="Mercy General Hospital"
-          address="123 Medical Center Dr, Suite 400"
-          faxNumber="+1 (555) 234-5678"
-          faxDate="Oct 24, 2023"
-        />
+      {/* Content */}
+      <div className="flex-1 overflow-hidden">
+        <PdfViewer pdfUrl={SAMPLE_PDF_URL} />
       </div>
     </div>
   )
