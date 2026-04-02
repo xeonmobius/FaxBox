@@ -1,9 +1,9 @@
 import { ArrowLeft, Download, Scan } from "lucide-react"
-import { invoke } from "@tauri-apps/api/core"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PdfViewer } from "@/components/PdfViewer"
 import { FaxMetadata } from "@/components/FaxMetadata"
+import { scanToPdf } from "@/utils/scan"
 
 interface FaxPreviewProps {
   fax: {
@@ -29,15 +29,7 @@ export function FaxPreview({ fax: _fax, onBack }: FaxPreviewProps) {
     setScanning(true)
     setScanError(null)
     try {
-      const scanner = localStorage.getItem("selected_scanner") || ""
-      const ocr = localStorage.getItem("ocr_enabled") === "true"
-      const tempDir = await invoke<string>("get_temp_dir")
-      const outputPath = `${tempDir}/faxbox_scan_${Date.now()}.pdf`
-      const result = await invoke<string>("scan_document", {
-        scanner,
-        outputPath,
-        ocr,
-      })
+      const result = await scanToPdf()
       setPdfUrl(result)
     } catch (err) {
       setScanError(err instanceof Error ? err.message : "Scan failed")

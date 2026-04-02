@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { scanToPdf } from "@/utils/scan"
 
 export interface Contact {
   id: number
@@ -78,7 +79,8 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
   const [coverLetter, setCoverLetter] = useState("")
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const scanInputRef = useRef<HTMLInputElement>(null)
+  const [scanning, setScanning] = useState(false)
+  const [scanError, setScanError] = useState<string | null>(null)
 
   useEffect(() => {
     if (newContact) {
@@ -146,21 +148,22 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
     }
   }
 
-  function handleScanDocument(e: ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
-    if (files) {
-      Array.from(files).forEach((file) => {
-        const newAttachment: Attachment = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-          name: file.name,
-          size: formatFileSize(file.size),
-          type: file.type,
-        }
-        setAttachments((prev) => [...prev, newAttachment])
-      })
-    }
-    if (scanInputRef.current) {
-      scanInputRef.current.value = ""
+  async function handleScanDocument() {
+    setScanning(true)
+    setScanError(null)
+    try {
+      const result = await scanToPdf()
+      const newAttachment: Attachment = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        name: result.split("/").pop() || "scanned_document.pdf",
+        size: "Scanned",
+        type: "application/pdf",
+      }
+      setAttachments((prev) => [...prev, newAttachment])
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : "Scan failed")
+    } finally {
+      setScanning(false)
     }
   }
 
@@ -343,21 +346,14 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
                 <Plus className="h-4 w-4 mr-2" />
                 Add File
               </Button>
-              <input
-                type="file"
-                ref={scanInputRef}
-                onChange={handleScanDocument}
-                className="hidden"
-                multiple
-                accept="image/*,.pdf"
-              />
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => scanInputRef.current?.click()}
+                onClick={handleScanDocument}
+                disabled={scanning}
               >
                 <Scan className="h-4 w-4 mr-2" />
-                Scan Document
+                {scanning ? "Scanning..." : "Scan Document"}
               </Button>
             </div>
 
@@ -387,6 +383,12 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
               </div>
             )}
           </div>
+
+          {scanError && (
+            <div className="px-4 py-2 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
+              {scanError}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="coverLetter">Cover Letter</Label>
