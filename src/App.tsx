@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Card, CardContent } from "@/components/ui/card"
@@ -228,10 +228,13 @@ export default function App() {
       <TooltipProvider>
         <SidebarProvider>
           <AppSidebar onNavigate={() => setPreviewFax(null)} />
-          <FaxPreview
-            fax={previewFax}
-            onBack={() => setPreviewFax(null)}
-          />
+        <main className="flex-1 p-6">
+            <SidebarTrigger />
+            <FaxPreview
+              fax={previewFax}
+              onBack={() => setPreviewFax(null)}
+            />
+          </main>
         </SidebarProvider>
       </TooltipProvider>
     )
@@ -260,6 +263,7 @@ export default function App() {
           }
         }} />
         <main className="flex-1 p-6">
+          <SidebarTrigger />
           {activeView === "newfax" ? (
             <SendNewFax
               onBack={() => {
