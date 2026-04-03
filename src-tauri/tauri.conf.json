@@ -9,9 +9,10 @@
     "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist"
   },
-  "app": {
+    "app": {
     "windows": [
       {
+        "label": "main",
         "title": "faxbox",
         "width": 800,
         "height": 600
