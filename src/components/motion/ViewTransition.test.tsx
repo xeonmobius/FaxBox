@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import { ViewTransition } from "./ViewTransition"
 
 describe("ViewTransition", () => {
@@ -12,7 +12,7 @@ describe("ViewTransition", () => {
     expect(screen.getByText("Inbox Content")).toBeInTheDocument()
   })
 
-  it("swaps content when viewKey changes", () => {
+  it("swaps content when viewKey changes", async () => {
     const { rerender } = render(
       <ViewTransition viewKey="inbox">
         <div>Inbox</div>
@@ -24,6 +24,8 @@ describe("ViewTransition", () => {
         <div>Outbox</div>
       </ViewTransition>
     )
-    expect(screen.getByText("Outbox")).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText("Outbox")).toBeInTheDocument()
+    })
   })
 })

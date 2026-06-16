@@ -10,7 +10,7 @@ interface ViewTransitionProps {
 export function ViewTransition({ viewKey, children }: ViewTransitionProps) {
   const reduceMotion = useReducedMotion()
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={viewKey}
         initial={reduceMotion ? false : fadeUp.initial}
