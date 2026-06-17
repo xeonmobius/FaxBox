@@ -12,7 +12,10 @@ This is a Tauri v2 desktop application using React 19, TypeScript, and Rust. Fol
 - `npm run build` - Build TypeScript and bundle with Vite
 - `npm run tauri build` - Build production desktop app (runs npm run build automatically)
 
-**No explicit test setup** - If adding tests, choose a framework (Vitest, Jest, React Testing Library) and document the single-test command here.
+**Testing**
+- `npm run test` - Run the Vitest test suite once (React Testing Library + jsdom)
+- `npm run test:watch` - Run Vitest in watch mode
+- Config in `vitest.config.ts`; setup (jest-dom matchers + cleanup + RAF polyfill) in `src/test/setup.ts`. New components follow TDD: write the failing test first as `*.test.tsx` next to the component.
 
 ## TypeScript/React Conventions
 
@@ -69,7 +72,8 @@ import "./App.css";
 
 ## Styling Conventions
 
-- Use regular CSS files (no CSS modules or Tailwind configured)
+- Use Tailwind CSS v4 (via `@tailwindcss/vite`) + shadcn/ui (new-york style). Global tokens live in `src/index.css` using `@theme inline` and CSS custom properties (HSL values).
+- Animation: use the `motion` library (import from `motion/react`) — e.g. `motion`, `AnimatePresence`, `useReducedMotion`. Shared motion primitives live in `src/components/motion/`; shared variants/timing in `src/lib/motion-variants.ts`.
 - Support dark mode using `@media (prefers-color-scheme: dark)`
 - Use semantic HTML: `<main>`, `<section>`, `<form>` instead of excessive `<div>`
 - CSS variable system in `:root` for theming
