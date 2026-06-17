@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -10,6 +11,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { fadeUpVariant, ITEM_DURATION, STAGGER_DELAY, EASE_OUT } from "@/lib/motion-variants"
+
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase()
+}
 import {
   Pagination,
   PaginationContent,
@@ -68,9 +80,24 @@ export function Contacts({ contacts, onAddContact, onEditContact }: ContactsProp
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedContacts.map((contact) => (
-                <TableRow key={contact.id}>
-                  <TableCell>{contact.fullName}</TableCell>
+              {paginatedContacts.map((contact, index) => (
+                <motion.tr
+                  key={contact.id}
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeUpVariant}
+                  transition={{ duration: ITEM_DURATION, ease: EASE_OUT, delay: index * STAGGER_DELAY }}
+                  className="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted"
+                  whileHover={{ y: -2 }}
+                >
+                  <TableCell>
+                    <div className="flex items-center">
+                      <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
+                        {initials(contact.fullName)}
+                      </span>
+                      {contact.fullName}
+                    </div>
+                  </TableCell>
                   <TableCell>{contact.specialty}</TableCell>
                   <TableCell>{contact.officeAddress}</TableCell>
                   <TableCell>{contact.phoneNumber}</TableCell>
@@ -80,7 +107,7 @@ export function Contacts({ contacts, onAddContact, onEditContact }: ContactsProp
                       Edit
                     </Button>
                   </TableCell>
-                </TableRow>
+                </motion.tr>
               ))}
             </TableBody>
           </Table>
