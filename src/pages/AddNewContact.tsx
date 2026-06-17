@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react"
 import { ArrowLeft } from "lucide-react"
+import { motion } from "motion/react"
+import { fadeUp, VIEW_DURATION, EASE_OUT } from "@/lib/motion-variants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -82,7 +84,12 @@ export function AddNewContact({ onBack, editingContact, onSave, onDelete, prefil
   const isEditing = !!editingContact
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
+    <motion.div
+      className="flex-1 flex flex-col h-screen"
+      initial={fadeUp.initial}
+      animate={fadeUp.animate}
+      transition={{ duration: VIEW_DURATION, ease: EASE_OUT }}
+    >
       <header className="flex items-center justify-between px-6 py-4 border-b">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack}>
@@ -181,6 +188,6 @@ export function AddNewContact({ onBack, editingContact, onSave, onDelete, prefil
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
