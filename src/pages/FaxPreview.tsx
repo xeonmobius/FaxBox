@@ -1,9 +1,11 @@
-import { ArrowLeft, Download, Scan } from "lucide-react"
+import { ArrowLeft, Download, Scan, Loader2 } from "lucide-react"
 import { useState } from "react"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { PdfViewer } from "@/components/PdfViewer"
 import { FaxMetadata } from "@/components/FaxMetadata"
 import { scanToPdf } from "@/utils/scan"
+import { VIEW_DURATION, EASE_OUT } from "@/lib/motion-variants"
 
 interface FaxPreviewProps {
   fax: {
@@ -54,7 +56,7 @@ export function FaxPreview({ fax: _fax, onBack }: FaxPreviewProps) {
             onClick={handleScan}
             disabled={scanning}
           >
-            <Scan className="mr-2 h-4 w-4" />
+            {scanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Scan className="mr-2 h-4 w-4" />}
             {scanning ? "Scanning..." : "Scan"}
           </Button>
           <Button className="bg-black text-white hover:bg-black/90">
@@ -79,9 +81,14 @@ export function FaxPreview({ fax: _fax, onBack }: FaxPreviewProps) {
       />
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden">
+      <motion.div
+        className="flex-1 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: VIEW_DURATION, ease: EASE_OUT }}
+      >
         <PdfViewer pdfUrl={pdfUrl} />
-      </div>
+      </motion.div>
     </div>
   )
 }
