@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, ChangeEvent } from "react"
-import { ArrowLeft, Search, X, FileText, Scan, Eye, Save, Send, Plus, Trash2, UserPlus } from "lucide-react"
+import { motion, AnimatePresence } from "motion/react"
+import { ArrowLeft, Search, X, FileText, Scan, Eye, Save, Send, Plus, Trash2, UserPlus, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { StaggerGroup } from "@/components/motion/StaggerGroup"
+import { StaggerItem } from "@/components/motion/StaggerItem"
+import { ITEM_DURATION, EASE_OUT } from "@/lib/motion-variants"
 import { scanToPdf } from "@/utils/scan"
 
 export interface Contact {
@@ -81,6 +85,7 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
+  const [submitState, setSubmitState] = useState<"idle" | "sending" | "sent">("idle")
 
   useEffect(() => {
     if (newContact) {
@@ -196,6 +201,7 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
       alert("Please add at least one attachment")
       return
     }
+    setSubmitState("sending")
     const recipientFax = selectedContact?.faxNumber || recipientSearch.split(" - ").pop() || recipientSearch
     onSave({
       id: editingFax?.id,
@@ -206,6 +212,7 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
       resolution: "standard",
       priority: "normal",
     })
+    setSubmitState("sent")
   }
 
   function handleDelete() {
@@ -239,9 +246,18 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
               Delete
             </Button>
           )}
-          <Button className="bg-black text-white hover:bg-black/90" onClick={handleSendFax}>
-            <Send className="mr-2 h-4 w-4" />
-            Send Fax
+          <Button
+            className="bg-black text-white hover:bg-black/90"
+            onClick={handleSendFax}
+            disabled={submitState === "sending"}
+          >
+            {submitState === "sending" ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+            ) : submitState === "sent" ? (
+              <><Check className="mr-2 h-4 w-4" /> Sent</>
+            ) : (
+              <><Send className="mr-2 h-4 w-4" /> Send Fax</>
+            )}
           </Button>
         </div>
       </header>
@@ -295,21 +311,29 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
                       }}
                     />
                   </div>
-                  {showSuggestions && filteredContacts.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg max-h-60 overflow-auto">
-                      {filteredContacts.map((contact) => (
-                        <button
-                          key={contact.id}
-                          className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-b last:border-b-0"
-                          onMouseDown={() => handleRecipientSelect(contact)}
-                        >
-                          <p className="font-medium">{contact.name}</p>
-                          <p className="text-sm text-muted-foreground">{contact.faxNumber}</p>
-                          <p className="text-xs text-muted-foreground">{contact.address}</p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {showSuggestions && filteredContacts.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: ITEM_DURATION, ease: EASE_OUT }}
+                        className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg overflow-hidden"
+                      >
+                        {filteredContacts.map((contact) => (
+                          <button
+                            key={contact.id}
+                            className="w-full px-4 py-3 text-left hover:bg-muted transition-colors border-b last:border-b-0"
+                            onMouseDown={() => handleRecipientSelect(contact)}
+                          >
+                            <p className="font-medium">{contact.name}</p>
+                            <p className="text-sm text-muted-foreground">{contact.faxNumber}</p>
+                            <p className="text-xs text-muted-foreground">{contact.address}</p>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </>
               )}
             </div>
@@ -358,9 +382,9 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
             </div>
 
             {attachments.length > 0 && (
-              <div className="space-y-2 mt-3">
+              <StaggerGroup className="space-y-2 mt-3">
                 {attachments.map((file) => (
-                  <div
+                  <StaggerItem
                     key={file.id}
                     className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
                   >
@@ -378,9 +402,9 @@ export function SendNewFax({ onBack, editingFax, onSave, onDelete, contacts, onA
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </StaggerItem>
                 ))}
-              </div>
+              </StaggerGroup>
             )}
           </div>
 
