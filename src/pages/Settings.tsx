@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react"
 import { invoke } from "@tauri-apps/api/core"
+import { motion } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Skeleton } from "@/components/ui/skeleton"
+import { fadeUp, VIEW_DURATION, EASE_OUT } from "@/lib/motion-variants"
 import {
   Select,
   SelectContent,
@@ -86,8 +89,17 @@ export function Settings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">Detecting devices...</p>
+      <div className="max-w-2xl mx-auto space-y-8">
+        <Skeleton className="h-8 w-40" />
+        <div className="space-y-6">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-64" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -100,9 +112,14 @@ export function Settings() {
       </div>
 
       {message && (
-        <div className={`p-4 rounded-md text-sm ${message.includes("Failed") ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"}`}>
+        <motion.div
+          initial={fadeUp.initial}
+          animate={fadeUp.animate}
+          transition={{ duration: VIEW_DURATION, ease: EASE_OUT }}
+          className={`p-4 rounded-md text-sm ${message.includes("Failed") ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}
+        >
           {message}
-        </div>
+        </motion.div>
       )}
 
       <div className="space-y-6">
