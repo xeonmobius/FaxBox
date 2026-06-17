@@ -25,6 +25,13 @@ import { SendNewFax, type OutboxFaxFormData, type Contact as FaxContact } from "
 import { Contacts, type Contact } from "@/pages/Contacts"
 import { AddNewContact, type ContactFormData } from "@/pages/AddNewContact"
 import { Settings } from "@/pages/Settings"
+import { Inbox as InboxIcon, Send, FileText } from "lucide-react"
+import { motion } from "motion/react"
+import { ViewTransition } from "@/components/motion/ViewTransition"
+import { StatCard } from "@/components/motion/StatCard"
+import { StatusBadge } from "@/components/motion/StatusBadge"
+import type { FaxStatus } from "@/lib/status-utils"
+import { fadeUpVariant, ITEM_DURATION, STAGGER_DELAY, EASE_OUT } from "@/lib/motion-variants"
 
 const faxes = [
   { id: 1, status: "New", sender: "+1 (555) 123-4567", received: "2024-01-15 09:30 AM", pages: 3 },
@@ -227,7 +234,7 @@ export default function App() {
     return (
       <TooltipProvider>
         <SidebarProvider>
-          <AppSidebar onNavigate={() => setPreviewFax(null)} />
+          <AppSidebar onNavigate={() => setPreviewFax(null)} activeView={activeView} inboxCount={faxCount} />
         <main className="flex-1 p-6">
             <SidebarTrigger />
             <FaxPreview
@@ -261,9 +268,10 @@ export default function App() {
             setPreviewFax(null)
             setActiveView("settings")
           }
-        }} />
+        }} activeView={activeView} inboxCount={faxCount} />
         <main className="flex-1 p-6">
           <SidebarTrigger />
+          <ViewTransition viewKey={activeView}>
           {activeView === "newfax" ? (
             <SendNewFax
               onBack={() => {
@@ -301,14 +309,7 @@ export default function App() {
               <div className="mt-4 space-y-6">
             {activeView === "inbox" ? (
               <>
-                <Card className="w-fit">
-                  <CardContent className="pt-6">
-                    <div className="text-4xl font-bold">{faxCount}</div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      unprocessed faxes today
-                    </p>
-                  </CardContent>
-                </Card>
+                <StatCard value={faxCount} label="unprocessed faxes today" icon={<InboxIcon className="h-4 w-4" />} variant="teal" />
                 <Card>
                   <CardContent className="p-0">
                     <Table>
@@ -322,9 +323,16 @@ export default function App() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {paginatedFaxes.map((fax) => (
-                          <TableRow key={fax.id}>
-                            <TableCell>{fax.status}</TableCell>
+                        {paginatedFaxes.map((fax, index) => (
+                          <motion.tr
+                            key={fax.id}
+                            className="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted"
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariant}
+                            transition={{ duration: ITEM_DURATION, ease: EASE_OUT, delay: index * STAGGER_DELAY }}
+                          >
+                            <TableCell><StatusBadge status={fax.status as FaxStatus} /></TableCell>
                             <TableCell>{fax.sender}</TableCell>
                             <TableCell>{fax.received}</TableCell>
                             <TableCell>{fax.pages}</TableCell>
@@ -337,7 +345,7 @@ export default function App() {
                                 Preview
                               </Button>
                             </TableCell>
-                          </TableRow>
+                          </motion.tr>
                         ))}
                       </TableBody>
                     </Table>
@@ -387,22 +395,8 @@ export default function App() {
             ) : (
               <>
                 <div className="flex gap-6">
-                  <Card className="w-fit">
-                    <CardContent className="pt-6">
-                      <div className="text-4xl font-bold">{sentCount}</div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Total Sent
-                      </p>
-                    </CardContent>
-                  </Card>
-                  <Card className="w-fit">
-                    <CardContent className="pt-6">
-                      <div className="text-4xl font-bold">{failedCount}</div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Failed
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <StatCard value={sentCount} label="Total Sent" icon={<Send className="h-4 w-4" />} variant="teal" />
+                  <StatCard value={failedCount} label="Failed" icon={<FileText className="h-4 w-4" />} variant="red" />
                 </div>
                 <Card>
                   <CardContent className="p-0">
@@ -417,9 +411,16 @@ export default function App() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {paginatedOutboxFaxes.map((fax) => (
-                          <TableRow key={fax.id}>
-                            <TableCell>{fax.status}</TableCell>
+                        {paginatedOutboxFaxes.map((fax, index) => (
+                          <motion.tr
+                            key={fax.id}
+                            className="border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted"
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUpVariant}
+                            transition={{ duration: ITEM_DURATION, ease: EASE_OUT, delay: index * STAGGER_DELAY }}
+                          >
+                            <TableCell><StatusBadge status={fax.status as FaxStatus} /></TableCell>
                             <TableCell>{fax.recipient}</TableCell>
                             <TableCell>{fax.sent}</TableCell>
                             <TableCell>{fax.pages}</TableCell>
@@ -439,7 +440,7 @@ export default function App() {
                                 Edit
                               </Button>
                             </TableCell>
-                          </TableRow>
+                          </motion.tr>
                         ))}
                       </TableBody>
                     </Table>
@@ -490,6 +491,7 @@ export default function App() {
           </div>
             </>
           )}
+          </ViewTransition>
         </main>
       </SidebarProvider>
     </TooltipProvider>
